@@ -20,7 +20,7 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 COPY --from=source /app/package.json /app/package-lock.json ./
 RUN npm ci --omit=dev
-COPY --from=build /app/next.config.ts ./
+COPY --from=build /app/next.config.js ./
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next ./.next
 EXPOSE 3000
