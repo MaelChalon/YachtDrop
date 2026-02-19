@@ -1,0 +1,17 @@
+{
+  "name": "YachtDrop",
+  "short_name": "YachtDrop",
+  "start_url": "/browse",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f9fc",
+  "theme_color": "#0b3954",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
