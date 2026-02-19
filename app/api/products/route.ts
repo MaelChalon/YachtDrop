@@ -10,7 +10,7 @@ const rate = new Map<string, { count: number; resetAt: number }>();
 
 function ensureFileGlobal() {
   if (typeof globalThis.File === "undefined") {
-    globalThis.File = NodeFile as typeof File;
+    (globalThis as { File?: typeof NodeFile }).File = NodeFile;
   }
 }
 
