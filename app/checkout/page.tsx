@@ -6,12 +6,14 @@ import { cartSubtotal, useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
 import { useI18n } from "@/components/i18n-provider";
 import { useOrderStore } from "@/store/order-store";
+import { useAuth } from "@/lib/auth-client";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
   const setLastOrder = useOrderStore((s) => s.setLastOrder);
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { t } = useI18n();
 
   const { method, marina, boatName, slip, pickupPoint, notes, setMethod, setField, reset } =
@@ -42,6 +44,9 @@ export default function CheckoutPage() {
       });
       const data = (await res.json()) as { confirmationId?: string; message?: string };
       if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error(t("auth.required"));
+        }
         throw new Error(data.message || t("checkout.error"));
       }
       setStatus("success");
@@ -69,6 +74,9 @@ export default function CheckoutPage() {
     <section>
       <h2 className="mb-3 text-lg font-bold">{t("checkout.title")}</h2>
       <form onSubmit={submit} className="space-y-3">
+        {!authLoading && !user ? (
+          <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">{t("auth.required")}</p>
+        ) : null}
         <div className="grid grid-cols-2 gap-2 rounded-xl bg-white p-2">
           <button
             type="button"
@@ -136,7 +144,7 @@ export default function CheckoutPage() {
           </div>
           <button
             type="submit"
-            disabled={items.length === 0 || status === "loading"}
+            disabled={items.length === 0 || status === "loading" || !user}
             className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-bold disabled:opacity-50"
           >
             {status === "loading" ? t("checkout.submitting") : t("checkout.submit")}

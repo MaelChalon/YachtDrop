@@ -22,24 +22,18 @@ Open `http://localhost:3000`.
 
 I am currently in a work and study programme (alternance). During the 48h hackathon I was in the company, so I could not complete every task I initially planned.
 
-## Implemented scope
+## Run with Docker
 
-- FR-01: Live ingestion through `GET /api/products` with server-side scraping, normalization, cache TTL, rate limit, and fallback.
-- FR-02: Product cards with image, name, price, short description and graceful missing-field handling.
-- FR-03: Search page with debounce and in-app result updates.
-- FR-04: Cart add/remove/update quantity with persisted client state.
-- FR-05: Checkout with Delivery/Pickup choice, minimal required fields, validation via `POST /api/checkout`.
-- FR-06: Mobile-first app shell (430px), client-side routes, bottom navigation.
-- FR-07: Consistent YachtDrop visual identity (ocean/sand/coral palette).
+Build the image:
 
-## API
+```bash
+docker build -t yachtdrop .
+```
 
-- `GET /api/products?q=&page=`
-  - Returns `{ products: Product[], cached: boolean }`
-- `POST /api/checkout`
-  - Validates payload and returns mock `{ confirmationId, message }`
+Run the container (with a local volume for the SQLite database):
 
-## Notes
+```bash
+docker run --rm -p 3000:3000 -v yachtdrop-data:/app/data yachtdrop
+```
 
-- Ingestion targets NauticHandler HTML and may require selector tuning if source markup changes.
-- A fallback product list is returned when live parsing fails, so the UX remains testable.
+Open `http://localhost:3000/browse`.

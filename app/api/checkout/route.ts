@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getSessionUser } from "@/lib/auth";
 
 const itemSchema = z.object({
   productId: z.string().min(1),
@@ -46,6 +47,10 @@ const checkoutSchema = z
 
 export async function POST(request: NextRequest) {
   try {
+    const user = getSessionUser();
+    if (!user) {
+      return NextResponse.json({ message: "AUTH_REQUIRED" }, { status: 401 });
+    }
     const payload = await request.json();
     const parsed = checkoutSchema.safeParse(payload);
 

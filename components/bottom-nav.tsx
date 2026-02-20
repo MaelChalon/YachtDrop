@@ -8,7 +8,8 @@ import { useI18n } from "@/components/i18n-provider";
 const tabs = [
   { href: "/browse", labelKey: "nav.browse" },
   { href: "/search", labelKey: "nav.search" },
-  { href: "/cart", labelKey: "nav.cart" }
+  { href: "/cart", labelKey: "nav.cart" },
+  { href: "/profile", labelKey: "nav.profile" }
 ];
 
 export function BottomNav() {
