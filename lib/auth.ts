@@ -106,6 +106,8 @@ export async function clearSessionCookie() {
   });
 }
 
+type SessionRow = UserRow & { session_expires: string };
+
 export async function getSessionUser() {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
@@ -115,9 +117,9 @@ export async function getSessionUser() {
   const db = getDb();
   const row = db
     .prepare(
-      "SELECT users.* , sessions.expires_at as session_expires FROM sessions JOIN users ON users.id = sessions.user_id WHERE sessions.token = ?"
+      "SELECT users.id, users.username, users.first_name, users.last_name, users.password_hash, sessions.expires_at as session_expires FROM sessions JOIN users ON users.id = sessions.user_id WHERE sessions.token = ?"
     )
-    .get(token);
+    .get(token) as SessionRow | undefined;
   if (!row) {
     return null;
   }
