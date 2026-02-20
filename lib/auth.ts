@@ -72,8 +72,9 @@ export function createSession(userId: number) {
   return { token, expiresAt };
 }
 
-export function setSessionCookie(token: string, expiresAt: string) {
-  cookies().set({
+export async function setSessionCookie(token: string, expiresAt: string) {
+  const store = await cookies();
+  store.set({
     name: SESSION_COOKIE,
     value: token,
     httpOnly: true,
@@ -83,8 +84,9 @@ export function setSessionCookie(token: string, expiresAt: string) {
   });
 }
 
-export function clearSessionCookie() {
-  cookies().set({
+export async function clearSessionCookie() {
+  const store = await cookies();
+  store.set({
     name: SESSION_COOKIE,
     value: "",
     httpOnly: true,
@@ -94,8 +96,9 @@ export function clearSessionCookie() {
   });
 }
 
-export function getSessionUser() {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+export async function getSessionUser() {
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
   if (!token) {
     return null;
   }
@@ -115,8 +118,9 @@ export function getSessionUser() {
   return rowToUser(row);
 }
 
-export function revokeSession() {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+export async function revokeSession() {
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
   if (!token) {
     return;
   }

@@ -47,7 +47,7 @@ const checkoutSchema = z
 
 export async function POST(request: NextRequest) {
   try {
-    const user = getSessionUser();
+    const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ message: "AUTH_REQUIRED" }, { status: 401 });
     }

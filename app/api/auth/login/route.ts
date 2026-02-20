@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
     }
     const session = createSession(user.id);
-    setSessionCookie(session.token, session.expiresAt);
+    await setSessionCookie(session.token, session.expiresAt);
     return NextResponse.json({ user });
   } catch {
     return NextResponse.json({ message: "Invalid JSON body." }, { status: 400 });
