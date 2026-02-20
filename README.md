@@ -36,4 +36,4 @@ Run the container (with a local volume for the SQLite database):
 docker run --rm -p 3000:3000 -v yachtdrop-data:/app/data yachtdrop
 ```
 
-Open `http://localhost:3000/browse`.
+Open `http://localhost:3000/browse`.pplique tous les fixes q

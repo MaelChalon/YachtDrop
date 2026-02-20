@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
 const itemSchema = z.object({
   productId: z.string().min(1),
   qty: z.number().int().positive(),

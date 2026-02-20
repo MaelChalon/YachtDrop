@@ -44,9 +44,19 @@ export function createUser(input: {
   return { user: rowToUser(user) };
 }
 
+type UserRow = {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  password_hash: string;
+};
+
 export function verifyUser(username: string, password: string) {
   const db = getDb();
-  const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+  const user = db
+    .prepare("SELECT id, username, first_name, last_name, password_hash FROM users WHERE username = ?")
+    .get(username) as UserRow | undefined;
   if (!user) {
     return null;
   }
