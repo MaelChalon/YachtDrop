@@ -20,7 +20,7 @@ Open `http://localhost:3000`.
 
 ## Context
 
-I am currently in a work and study programme (alternance). During the 48h hackathon I was in the company, so I could not complete every task I initially planned.
+I am currently in a work and study program (apprenticeship). During the 48h hackathon I was in the company, so I could not complete every task I initially planned.
 
 ## Run with Docker
 
