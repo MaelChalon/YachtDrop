@@ -55,20 +55,25 @@ export async function GET(request: NextRequest) {
 
     try {
       ensureFileGlobal();
-      const { ingestProducts } = await import("@/lib/nautichandler");
+      const { ingestProducts, maybeWarmCatalog, searchCatalog } = await import("@/lib/nautichandler");
+      maybeWarmCatalog();
+      if (q) {
+        const catalogResults = await searchCatalog(q, safePage);
+        if (catalogResults.length > 0) {
+          cache.set(key, catalogResults);
+          return NextResponse.json({ products: catalogResults, cached: true, source: "catalog" });
+        }
+      }
       const products = await ingestProducts(q, safePage);
       cache.set(key, products);
-      return NextResponse.json({ products, cached: false });
+      return NextResponse.json({ products, cached: false, source: "live" });
     } catch (error) {
       console.error("[api/products] ingestion failed", { q, safePage, error });
       const fallback = cache.get(key);
       if (fallback) {
         return NextResponse.json({ products: fallback, cached: true, degraded: true });
       }
-      return NextResponse.json(
-        { message: "La source produit est indisponible pour le moment." },
-        { status: 502 }
-      );
+      return NextResponse.json({ products: [], cached: true, degraded: true });
     }
   } catch (error) {
     console.error("[api/products] unexpected error", { error });

@@ -18,6 +18,10 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Context
+
+I am currently in a work and study programme (alternance). During the 48h hackathon I was in the company, so I could not complete every task I initially planned.
+
 ## Implemented scope
 
 - FR-01: Live ingestion through `GET /api/products` with server-side scraping, normalization, cache TTL, rate limit, and fallback.

@@ -11,6 +11,13 @@ function debugLog(...args: unknown[]) {
   }
 }
 
+const CATALOG_PAGE_SIZE = 24;
+const catalogCache = {
+  products: [] as Product[],
+  updatedAt: 0,
+  refreshing: false
+};
+
 function buildCandidateUrls(q: string, page: number): string[] {
   const trimmed = q.trim();
   if (!trimmed) {
@@ -120,6 +127,75 @@ function parseWithSelectors(html: string): Product[] {
   return products;
 }
 
+function filterProducts(products: Product[], q: string): Product[] {
+  const terms = q
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (terms.length === 0) {
+    return products;
+  }
+  return products.filter((product) => {
+    const haystack = `${product.name} ${product.shortDescription}`.toLowerCase();
+    return terms.every((term) => haystack.includes(term));
+  });
+}
+
+function dedupeProducts(products: Product[]): Product[] {
+  const seen = new Set<string>();
+  const unique: Product[] = [];
+  for (const product of products) {
+    const key = product.productUrl || product.id;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    unique.push(product);
+  }
+  return unique;
+}
+
+function mergeCatalog(products: Product[]) {
+  catalogCache.products = dedupeProducts([...catalogCache.products, ...products]);
+  catalogCache.updatedAt = Date.now();
+}
+
+function paginate<T>(items: T[], page: number, pageSize: number): T[] {
+  const start = (Math.max(1, page) - 1) * pageSize;
+  return items.slice(start, start + pageSize);
+}
+
+async function refreshCatalog(maxPages: number) {
+  if (catalogCache.refreshing) {
+    return;
+  }
+  catalogCache.refreshing = true;
+  try {
+    for (let page = 1; page <= maxPages; page += 1) {
+      const response = await fetch(`${BASE}/?page=${page}`, {
+        headers: {
+          "User-Agent": "YachtDropBot/1.0 (+https://yachtdrop.local)"
+        },
+        next: { revalidate: 0 }
+      });
+      if (!response.ok) {
+        debugLog("catalog page non-200", { page, status: response.status });
+        continue;
+      }
+      const html = await response.text();
+      const parsed = parseWithSelectors(html);
+      if (parsed.length === 0) {
+        break;
+      }
+      mergeCatalog(parsed);
+    }
+  } catch (error) {
+    debugLog("catalog refresh failed", { error });
+  } finally {
+    catalogCache.refreshing = false;
+  }
+}
+
 function fallbackProducts(q: string): Product[] {
   const term = q?.trim() || "nautic";
   return [
@@ -146,6 +222,7 @@ function fallbackProducts(q: string): Product[] {
 
 export async function ingestProducts(q: string, page: number): Promise<Product[]> {
   const urls = buildCandidateUrls(q, page);
+  const trimmed = q.trim();
   for (const url of urls) {
     try {
       const response = await fetch(url, {
@@ -161,7 +238,7 @@ export async function ingestProducts(q: string, page: number): Promise<Product[]
       const html = await response.text();
       const parsed = parseWithSelectors(html);
       if (parsed.length > 0) {
-        return parsed;
+        return trimmed ? filterProducts(parsed, trimmed) : parsed;
       }
       debugLog("parsed zero products", { url });
     } catch (error) {
@@ -169,5 +246,28 @@ export async function ingestProducts(q: string, page: number): Promise<Product[]
       continue;
     }
   }
+  if (trimmed) {
+    return [];
+  }
   return fallbackProducts(q);
+}
+
+export async function searchCatalog(q: string, page: number): Promise<Product[]> {
+  const trimmed = q.trim();
+  if (!trimmed) {
+    return [];
+  }
+  if (catalogCache.products.length === 0) {
+    return [];
+  }
+  const filtered = filterProducts(catalogCache.products, trimmed);
+  return paginate(filtered, page, CATALOG_PAGE_SIZE);
+}
+
+export function maybeWarmCatalog() {
+  const now = Date.now();
+  const stale = now - catalogCache.updatedAt > 15 * 60 * 1000;
+  if (stale && !catalogCache.refreshing) {
+    void refreshCatalog(6);
+  }
 }

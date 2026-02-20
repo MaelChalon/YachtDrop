@@ -24,7 +24,7 @@ export default function SearchPage() {
         placeholder={t("search.placeholder")}
         clearLabel={t("search.clear")}
       />
-      <ProductFeed query={query} />
+      <ProductFeed key={query} query={query} />
     </section>
   );
 }

@@ -5,7 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "YachtDrop",
   description: "Mobile-first chandlery ordering for yacht crews",
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.webmanifest"
+};
+
+export const viewport = {
   themeColor: "#0b3954"
 };
 

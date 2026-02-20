@@ -1,13 +1,17 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { cartSubtotal, useCartStore } from "@/store/cart-store";
 import { useCheckoutStore } from "@/store/checkout-store";
 import { useI18n } from "@/components/i18n-provider";
+import { useOrderStore } from "@/store/order-store";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
+  const setLastOrder = useOrderStore((s) => s.setLastOrder);
+  const router = useRouter();
   const { t } = useI18n();
 
   const { method, marina, boatName, slip, pickupPoint, notes, setMethod, setField, reset } =
@@ -42,8 +46,17 @@ export default function CheckoutPage() {
       }
       setStatus("success");
       setMessage(`${t("checkout.confirmed")}: ${data.confirmationId}`);
+      setLastOrder({
+        confirmationId: data.confirmationId || "N/A",
+        items,
+        subtotal: cartSubtotal(items),
+        currency: items[0]?.currency || "EUR",
+        method,
+        createdAt: new Date().toISOString()
+      });
       clearCart();
       reset();
+      router.push("/checkout/success");
     } catch (err) {
       setStatus("error");
       setMessage((err as Error).message);
